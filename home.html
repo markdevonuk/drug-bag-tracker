@@ -95,14 +95,19 @@
             });
 
             Quagga.onDetected(function (data) {
+                // Fill barcode input field with scanned barcode
                 document.getElementById("barcodeInput").value = data.codeResult.code;
-                Quagga.stop(); // Stop the scanner once the barcode is detected
+                // Pause the scanner once a barcode is detected
+                Quagga.stop();
+                // Enable form submission and allow action selection
+                document.getElementById("submitBtn").disabled = false;
             });
         }
 
         // Function to restart the barcode scanner after form submission
         function restartScanner() {
             document.getElementById("barcodeInput").value = ""; // Reset barcode input
+            document.getElementById("submitBtn").disabled = true; // Disable the submit button until scan
             Quagga.start(); // Restart the scanner
         }
     </script>
@@ -110,7 +115,7 @@
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V2</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V6</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -141,7 +146,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()" disabled>Submit</button>
             </form>
         </div>
     </div>
