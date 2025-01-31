@@ -49,12 +49,16 @@
             })
             .then(response => {
                 console.log("Request sent");
-                alert("Scan successfully logged!");
-                resetForm();
+                document.getElementById("scanMessage").textContent = "Scan successfully logged!";
+                document.getElementById("scanMessage").classList.remove("text-danger");
+                document.getElementById("scanMessage").classList.add("text-success");
+                setTimeout(resetForm, 2000); // Reset after 2 seconds
             })
             .catch(error => {
                 console.error("Error:", error);
-                alert("There was an error with the request. Please try again.");
+                document.getElementById("scanMessage").textContent = "Error logging scan. Try again.";
+                document.getElementById("scanMessage").classList.remove("text-success");
+                document.getElementById("scanMessage").classList.add("text-danger");
                 document.getElementById("submitBtn").disabled = false;
                 document.getElementById("submitBtn").innerHTML = "Submit";
             });
@@ -66,6 +70,7 @@
             document.getElementById("submitBtn").innerHTML = "Submit";
             document.getElementById("scanSection").style.display = "none";
             document.getElementById("loginSection").style.display = "block";
+            document.getElementById("scanMessage").textContent = ""; // Clear message
             startScanner(); // Restart scanner for next scan
         }
 
@@ -88,7 +93,10 @@
 
             Quagga.onDetected(function (data) {
                 document.getElementById("barcodeInput").value = data.codeResult.code;
-                alert("Barcode scanned! Please select Book In or Book Out before submitting.");
+                document.getElementById("scanMessage").textContent = "Barcode scanned! Select Book In or Book Out before submitting.";
+                document.getElementById("scanMessage").classList.remove("text-danger");
+                document.getElementById("scanMessage").classList.add("text-info");
+                setTimeout(() => document.getElementById("scanMessage").textContent = "", 3000); // Hide after 3 seconds
             });
         }
     </script>
@@ -96,7 +104,7 @@
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V2.1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V3</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -123,6 +131,8 @@
                     <label class="form-check-label">Book In</label>
                 </div>
 
+                <p id="scanMessage" class="text-center fw-bold"></p>
+
                 <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
             </form>
         </div>
@@ -133,3 +143,4 @@
 
 </body>
 </html>
+
