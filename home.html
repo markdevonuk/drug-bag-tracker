@@ -29,17 +29,18 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            fetch("curl -X POST -H "Content-Type: application/json" -d '{"action": "check-in", "ambulanceNumber": "1234", "drugBagID": "ABCD123", "status": "on-hand", "lastSeen": "2025-01-31"}' 'https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec'", {
-    method: "POST",
+fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+    method: 'POST',
     headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-        status: status,
+        action: action,
         ambulanceNumber: ambulanceNumber,
         drugBagID: drugBagID,
+        status: status,
         lastSeen: lastSeen
-    })
+    }),
 })
 .then(response => {
     if (!response.ok) {
