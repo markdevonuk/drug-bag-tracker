@@ -1,17 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Drug Bag Tracker</title>
+    <title>Drug Bag Tracker V2.1</title>
+    <!-- Include the QuaggaJS library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
         let ambulanceNumber = "";
+        
+        // Start scanning when the ambulance number is set
         function setAmbulanceNumber() {
             ambulanceNumber = document.getElementById("ambulanceInput").value;
             if (ambulanceNumber.length === 4) {
                 document.getElementById("scanSection").style.display = "block";
                 document.getElementById("loginSection").style.display = "none";
+                startScanner();  // Start the scanner once ambulance number is entered
             } else {
                 alert("Please enter a valid 4-digit ambulance number.");
             }
+        }
+
+        // Initialize the camera and start scanning
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    type: 'LiveStream', // Capture video from camera
+                    target: document.querySelector('#scanner-container'), // Container to display the camera feed
+                    constraints: {
+                        facingMode: 'environment' // Use the rear camera
+                    }
+                },
+                decoder: {
+                    readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'upc_reader'] // Barcode formats
+                }
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    alert("Error starting scanner");
+                    return;
+                }
+                Quagga.start(); // Start scanning
+            });
+
+            // On detected barcode, stop the scanner and log the result
+            Quagga.onDetected(function(result) {
+                const drugBagID = result.codeResult.code;
+                document.getElementById('barcodeInput').value = drugBagID; // Set barcode value in the input field
+                stopScanner();  // Stop scanning after barcode detection
+                logScan(drugBagID); // Call the logScan function
+            });
+        }
+
+        // Stop the scanner when a barcode is detected
+        function stopScanner() {
+            Quagga.stop();
         }
 
         function scanBarcode() {
@@ -29,33 +70,32 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        action: action,
-        ambulanceNumber: ambulanceNumber,
-        drugBagID: drugBagID,
-        status: status,
-        lastSeen: lastSeen
-    }),
-    mode: 'no-cors'  // Disable CORS preflight checks
-})
-.then(response => {
-    console.log("Request sent");
-})
-.catch(error => {
-    console.error("Error:", error);
-    alert("There was an error with the request. Please try again.");
-});
-
+            fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                }),
+                mode: 'no-cors'  // Disable CORS preflight checks
+            })
+            .then(response => {
+                console.log("Request sent");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was an error with the request. Please try again.");
+            });
         }
     </script>
 </head>
 <body>
-    <h2>Drug Bag Tracker V2.1</h2>
+    <h2>Drug Bag Tracker V2.2</h2>
     <div id="loginSection">
         <label>Enter Ambulance Number:</label>
         <input type="text" id="ambulanceInput" maxlength="4">
@@ -63,7 +103,9 @@ fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFp
     </div>
     <div id="scanSection" style="display:none;">
         <h3>Scan Drug Bag</h3>
-        <input type="text" id="barcodeInput" placeholder="Scan barcode here">
+        <!-- Container for camera feed -->
+        <div id="scanner-container" style="width: 100%; height: 300px;"></div>
+        <input type="text" id="barcodeInput" placeholder="Scan barcode here" readonly>
         <br>
         <label><input type="radio" name="actionType" value="out" checked> Book Out</label>
         <label><input type="radio" name="actionType" value="in"> Book In</label>
@@ -72,4 +114,5 @@ fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFp
     </div>
 </body>
 </html>
+
 
