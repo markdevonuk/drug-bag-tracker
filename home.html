@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Drug Bag Tracker 12</title>
+    <title>Drug Bag Tracker 13</title>
     <script>
         let ambulanceNumber = "";
         function setAmbulanceNumber() {
@@ -29,21 +29,30 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            fetch("https://thingproxy.freeboard.io/fetch/https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/exec", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    status: status, 
-                    ambulanceNumber: ambulanceNumber,
-                    drugBagID: drugBagID,
-                    lastSeen: lastSeen
-                })
-            })
-            .then(response => response.json())
-            .then(data => console.log("Success:", data))
-            .catch(error => console.error("Error:", error));
+            fetch("https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/exec", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        status: status,
+        ambulanceNumber: ambulanceNumber,
+        drugBagID: drugBagID,
+        lastSeen: lastSeen
+    })
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok: ' + response.statusText);
+    }
+    return response.json();
+})
+.then(data => console.log("Success:", data))
+.catch(error => {
+    console.error("Error:", error);
+    alert("There was an error with the request. Please try again.");
+});
+
         }
     </script>
 </head>
