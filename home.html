@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Drug Bag Tracker 7</title>
+    <title>Drug Bag Tracker 8</title>
     <script>
         let ambulanceNumber = "";
         function setAmbulanceNumber() {
@@ -30,23 +30,23 @@
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
             fetch("https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/exec", {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-            action: "check-out",
-            ambulanceNumber: ambulanceNumber,
-            drugBagID: drugBagID,
-            status: "out",
-            lastSeen: new Date().toISOString()
-  })
-})
-.then(response => response.json()) // Expect JSON response
-.then(data => console.log("Success:", data))
-.catch(error => console.error("Error:", error));
-
-</script>
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: status, 
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log("Success:", data))
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
 </head>
 <body>
     <h2>Drug Bag Tracker</h2>
@@ -66,3 +66,4 @@
     </div>
 </body>
 </html>
+
