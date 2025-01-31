@@ -29,7 +29,7 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            fetch("https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/execc", {
+            fetch("https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/exec", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
