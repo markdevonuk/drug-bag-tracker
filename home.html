@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Drug Bag Tracker 9</title>
+    <title>Drug Bag Tracker 10</title>
     <script>
         let ambulanceNumber = "";
         function setAmbulanceNumber() {
@@ -35,10 +35,9 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    action: status, 
+                    status: status, 
                     ambulanceNumber: ambulanceNumber,
                     drugBagID: drugBagID,
-                    status: status,
                     lastSeen: lastSeen
                 })
             })
