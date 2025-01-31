@@ -63,6 +63,11 @@
                 document.getElementById("barcodeInput").value = ""; // Clear barcode field
                 document.getElementById("submitBtn").disabled = false;
                 document.getElementById("submitBtn").innerHTML = "Submit";
+                // Optionally reset the action selection to default
+                document.querySelector('input[name="actionType"][value="out"]').checked = true;
+
+                // Restart the scanner for the next scan
+                restartScanner();
             })
             .catch(error => {
                 console.error("Error:", error);
@@ -114,7 +119,7 @@
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
