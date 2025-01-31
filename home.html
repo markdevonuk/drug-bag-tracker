@@ -79,16 +79,33 @@
             .then(response => {
                 console.log("Request sent");
                 alert("Data submitted successfully!");
+                resetForm(); // Reset the form after successful submission
             })
             .catch(error => {
                 console.error("Error:", error);
                 alert("There was an error with the request. Please try again.");
             });
         }
+
+        // Reset the form and go back to the start
+        function resetForm() {
+            // Hide the scan and action sections
+            document.getElementById("scanSection").style.display = "none";
+            document.getElementById("actionSection").style.display = "none";
+            document.getElementById("loginSection").style.display = "block"; // Show the ambulance number input again
+
+            // Reset the input fields
+            document.getElementById('ambulanceInput').value = '';
+            document.getElementById('barcodeInput').value = '';
+            document.querySelector('input[name="actionType"][value="out"]').checked = true; // Default to "Book Out"
+
+            // Stop the scanner completely (in case the user starts a new scan)
+            Quagga.stop();
+        }
     </script>
 </head>
 <body>
-    <h2>Drug Bag Tracker V2.1</h2>
+    <h2>Drug Bag Tracker V2.3</h2>
     <div id="loginSection">
         <label>Enter Ambulance Number:</label>
         <input type="text" id="ambulanceInput" maxlength="4">
@@ -110,3 +127,5 @@
     </div>
 </body>
 </html>
+
+
