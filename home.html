@@ -58,17 +58,20 @@
 
         function scanBarcode() {
             let drugBagID = document.getElementById("barcodeInput").value;
-            if (drugBagID) {
-                document.getElementById("submitBtn").disabled = true;
-                document.getElementById("submitBtn").innerHTML = "Submitting...";
-                logScan(drugBagID);
-            } else {
-                alert("Please scan a barcode.");
+            let action = document.querySelector('input[name="actionType"]:checked').value;
+
+            if (!drugBagID) {
+                alert("Please scan a barcode first.");
+                return;
             }
+
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("submitBtn").innerHTML = "Submitting...";
+
+            logScan(drugBagID, action);
         }
 
-        function logScan(drugBagID) {
-            let action = document.querySelector('input[name="actionType"]:checked').value;
+        function logScan(drugBagID, action) {
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
@@ -102,7 +105,7 @@
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V4</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V5</h2>
 
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
             <label class="form-label">Enter Ambulance Number:</label>
@@ -137,3 +140,4 @@
 
 </body>
 </html>
+
