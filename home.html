@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drug Bag Tracker</title>
+    <script>
+        let ambulanceNumber = "";
+        function setAmbulanceNumber() {
+            ambulanceNumber = document.getElementById("ambulanceInput").value;
+            if (ambulanceNumber.length === 4) {
+                document.getElementById("scanSection").style.display = "block";
+                document.getElementById("loginSection").style.display = "none";
+            } else {
+                alert("Please enter a valid 4-digit ambulance number.");
+            }
+        }
+
+        function scanBarcode() {
+            let drugBagID = document.getElementById("barcodeInput").value;
+            if (drugBagID) {
+                logScan(drugBagID);
+            } else {
+                alert("Please scan a barcode.");
+            }
+        }
+
+        function logScan(drugBagID) {
+            let timestamp = new Date().toISOString();
+            let action = document.querySelector('input[name="actionType"]:checked').value;
+            let status = action === "out" ? "Out" : "In";
+            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+
+            fetch("https://script.google.com/macros/s/AKfycbzTYD1XVhdPIEWILRq07VErOaKPc9ajjZlNCvc2OXmkJvuG0YmnlgZmR_AZvcqKFUFofg/exec", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    timestamp: timestamp,
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                })
+            }).then(response => response.text())
+            .then(data => {
+                alert("Scan logged successfully!");
+                document.getElementById("barcodeInput").value = "";
+            }).catch(error => console.error("Error:", error));
+        }
+    </script>
+</head>
+<body>
+    <h2>Drug Bag Tracker</h2>
+    <div id="loginSection">
+        <label>Enter Ambulance Number:</label>
+        <input type="text" id="ambulanceInput" maxlength="4">
+        <button onclick="setAmbulanceNumber()">Start</button>
+    </div>
+    <div id="scanSection" style="display:none;">
+        <h3>Scan Drug Bag</h3>
+        <input type="text" id="barcodeInput" placeholder="Scan barcode here">
+        <br>
+        <label><input type="radio" name="actionType" value="out" checked> Book Out</label>
+        <label><input type="radio" name="actionType" value="in"> Book In</label>
+        <br>
+        <button onclick="scanBarcode()">Submit</button>
+    </div>
+</body>
+</html>
