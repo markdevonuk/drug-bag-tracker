@@ -21,7 +21,7 @@
                 document.getElementById("loginSection").style.display = "none";
                 startScanner();
             } else {
-                alert("Please enter a valid 4-digit ambulance number.");
+                alert("Please enter your 4-digit ambulance number.");
             }
         }
 
@@ -40,7 +40,7 @@
             let timestamp = new Date().toISOString();
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
-            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+            let lastSeen = action === "out" ? ambulanceNumber : "In Store";
 
             fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
                 method: 'POST',
@@ -104,13 +104,13 @@
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V3</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V3.1</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
             <label class="form-label">Enter Ambulance Number:</label>
-            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 1234">
-            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Start</button>
+            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 2901">
+            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Go!</button>
         </div>
 
         <!-- Scan Section -->
@@ -124,14 +124,14 @@
                 
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="actionType" value="out" checked>
-                    <label class="form-check-label">Book Out</label>
+                    <label class="form-check-label">Book drugs bag OUT</label>
                 </div>
                 <div class="form-check mb-3">
                     <input class="form-check-input" type="radio" name="actionType" value="in">
-                    <label class="form-check-label">Book In</label>
+                    <label class="form-check-label">Book drugs bag IN</label>
                 </div>
 
-                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Confirm</button>
             </form>
         </div>
     </div>
