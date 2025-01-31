@@ -6,7 +6,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
         let ambulanceNumber = "";
-        
+        let drugBagID = "";
+
         // Start scanning when the ambulance number is set
         function setAmbulanceNumber() {
             ambulanceNumber = document.getElementById("ambulanceInput").value;
@@ -43,10 +44,10 @@
 
             // On detected barcode, stop the scanner and log the result
             Quagga.onDetected(function(result) {
-                const drugBagID = result.codeResult.code;
+                drugBagID = result.codeResult.code;
                 document.getElementById('barcodeInput').value = drugBagID; // Set barcode value in the input field
                 stopScanner();  // Stop scanning after barcode detection
-                logScan(drugBagID); // Call the logScan function
+                document.getElementById("actionSection").style.display = "block"; // Show the action selection section
             });
         }
 
@@ -55,17 +56,8 @@
             Quagga.stop();
         }
 
-        function scanBarcode() {
-            let drugBagID = document.getElementById("barcodeInput").value;
-            if (drugBagID) {
-                logScan(drugBagID);
-            } else {
-                alert("Please scan a barcode.");
-            }
-        }
-
-        function logScan(drugBagID) {
-            let timestamp = new Date().toISOString();
+        // Proceed with logging the scan and submitting data
+        function logScan() {
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
@@ -86,6 +78,7 @@
             })
             .then(response => {
                 console.log("Request sent");
+                alert("Data submitted successfully!");
             })
             .catch(error => {
                 console.error("Error:", error);
@@ -107,12 +100,13 @@
         <div id="scanner-container" style="width: 100%; height: 300px;"></div>
         <input type="text" id="barcodeInput" placeholder="Scan barcode here" readonly>
         <br>
-        <label><input type="radio" name="actionType" value="out" checked> Book Out</label>
-        <label><input type="radio" name="actionType" value="in"> Book In</label>
-        <br>
-        <button onclick="scanBarcode()">Submit</button>
+        <!-- Action section to select "Book In" or "Book Out" -->
+        <div id="actionSection" style="display:none;">
+            <label><input type="radio" name="actionType" value="out" checked> Book Out</label>
+            <label><input type="radio" name="actionType" value="in"> Book In</label>
+            <br>
+            <button onclick="logScan()">Submit</button>
+        </div>
     </div>
 </body>
 </html>
-
-
