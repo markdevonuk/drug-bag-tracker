@@ -29,7 +29,7 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            fetch("https://script.google.com/macros/s/AKfycbzP0Nk_78XPfQKqfiZy_SyiA9WlelAX44QDGtB2i2UxyvAJNSjoWM3D-Q9DcKlE3ddFtQ/exec", {
+            fetch("curl -X POST -H "Content-Type: application/json" -d '{"action": "check-in", "ambulanceNumber": "1234", "drugBagID": "ABCD123", "status": "on-hand", "lastSeen": "2025-01-31"}' 'https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec'", {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
