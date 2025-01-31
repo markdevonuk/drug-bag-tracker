@@ -37,34 +37,40 @@
         }
 
         function logScan(drugBagID) {
+            let timestamp = new Date().toISOString();
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
             fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, ambulanceNumber, drugBagID, status, lastSeen }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                }),
                 mode: 'no-cors'
             })
             .then(response => {
                 console.log("Request sent");
-                setTimeout(resetForm, 2000); // Reset after 2 seconds
+                alert("Scan successfully logged!");
+                document.getElementById("scanForm").reset();
+                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("submitBtn").innerHTML = "Submit";
+                document.getElementById("scanSection").style.display = "none";
+                document.getElementById("loginSection").style.display = "block";
             })
             .catch(error => {
                 console.error("Error:", error);
+                alert("There was an error with the request. Please try again.");
                 document.getElementById("submitBtn").disabled = false;
                 document.getElementById("submitBtn").innerHTML = "Submit";
             });
-        }
-
-        function resetForm() {
-            document.getElementById("scanForm").reset();
-            document.getElementById("submitBtn").disabled = false;
-            document.getElementById("submitBtn").innerHTML = "Submit";
-            document.getElementById("scanSection").style.display = "none";
-            document.getElementById("loginSection").style.display = "block";
-            startScanner(); // Restart scanner for next scan
         }
 
         function startScanner() {
@@ -72,10 +78,14 @@
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
-                    target: document.querySelector("#scanner"),
-                    constraints: { facingMode: "environment" }
+                    target: document.querySelector("#scanner"), 
+                    constraints: {
+                        facingMode: "environment" 
+                    }
                 },
-                decoder: { readers: ["code_128_reader", "ean_reader", "ean_8_reader"] }
+                decoder: {
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader"]
+                }
             }, function (err) {
                 if (err) {
                     console.error(err);
@@ -86,14 +96,21 @@
 
             Quagga.onDetected(function (data) {
                 document.getElementById("barcodeInput").value = data.codeResult.code;
+                Quagga.stop(); // Stop the scanner once the barcode is detected
             });
+        }
+
+        // Function to restart the barcode scanner after form submission
+        function restartScanner() {
+            document.getElementById("barcodeInput").value = ""; // Reset barcode input
+            Quagga.start(); // Restart the scanner
         }
     </script>
 </head>
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V2</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -106,11 +123,14 @@
         <div id="scanSection" class="card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Scan Drug Bag</h3>
 
+            <!-- Live Camera Stream for Barcode Scanning -->
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
 
             <form id="scanForm">
+                <!-- Display scanned barcode -->
                 <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
                 
+                <!-- Action selection (Book In / Book Out) -->
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="actionType" value="out" checked>
                     <label class="form-check-label">Book Out</label>
@@ -120,6 +140,7 @@
                     <label class="form-check-label">Book In</label>
                 </div>
 
+                <!-- Submit Button -->
                 <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
             </form>
         </div>
