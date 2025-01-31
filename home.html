@@ -36,8 +36,8 @@
             },
             body: JSON.stringify({
             action: "check-out",
-            ambulanceNumber: "2808",
-            drugBagID: "BAG123",
+            ambulanceNumber: ambulanceNumber,
+            drugBagID: drugBagID,
             status: "out",
             lastSeen: new Date().toISOString()
   })
