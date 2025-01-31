@@ -41,14 +41,11 @@ fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFp
         status: status,
         lastSeen: lastSeen
     }),
+    mode: 'no-cors'  // Disable CORS preflight checks
 })
 .then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok: ' + response.statusText);
-    }
-    return response.json();
+    console.log("Request sent");
 })
-.then(data => console.log("Success:", data))
 .catch(error => {
     console.error("Error:", error);
     alert("There was an error with the request. Please try again.");
@@ -58,7 +55,7 @@ fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFp
     </script>
 </head>
 <body>
-    <h2>Drug Bag Tracker V2</h2>
+    <h2>Drug Bag Tracker V2.1</h2>
     <div id="loginSection">
         <label>Enter Ambulance Number:</label>
         <input type="text" id="ambulanceInput" maxlength="4">
