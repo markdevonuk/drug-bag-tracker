@@ -1,64 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Drug Bag Tracker V2.1</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Drug Bag Tracker</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
     <script>
         let ambulanceNumber = "";
-        let drugBagID = "";
 
         function setAmbulanceNumber() {
             ambulanceNumber = document.getElementById("ambulanceInput").value;
             if (ambulanceNumber.length === 4) {
                 document.getElementById("scanSection").style.display = "block";
                 document.getElementById("loginSection").style.display = "none";
-                startScanner();
             } else {
                 alert("Please enter a valid 4-digit ambulance number.");
             }
         }
 
-        function startScanner() {
-            Quagga.init({
-                inputStream: {
-                    type: 'LiveStream',
-                    target: document.querySelector('#scanner-container'),
-                    constraints: {
-                        facingMode: 'environment'
-                    }
-                },
-                decoder: {
-                    readers: ['code_128_reader', 'ean_reader', 'ean_8_reader', 'upc_reader']
-                }
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    alert("Error starting scanner");
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function(result) {
-                drugBagID = result.codeResult.code;
-                document.getElementById('barcodeInput').value = drugBagID;
-                stopScanner();
-                document.getElementById("actionSection").style.display = "block";
-            });
+        function scanBarcode() {
+            let drugBagID = document.getElementById("barcodeInput").value;
+            if (drugBagID) {
+                document.getElementById("submitBtn").disabled = true;
+                document.getElementById("submitBtn").innerHTML = "Submitting...";
+                logScan(drugBagID);
+            } else {
+                alert("Please scan a barcode.");
+            }
         }
 
-        function stopScanner() {
-            Quagga.stop();
-        }
-
-        function logScan() {
+        function logScan(drugBagID) {
+            let timestamp = new Date().toISOString();
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
-            
-            // Disable submit button & show loading message
-            document.getElementById("submitBtn").disabled = true;
-            document.getElementById("loadingMessage").style.display = "block";
 
             fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
                 method: 'POST',
@@ -76,52 +54,56 @@
             })
             .then(response => {
                 console.log("Request sent");
-                alert("Data submitted successfully!");
-                resetForm();
+                alert("Scan successfully logged!");
+                document.getElementById("scanForm").reset();
+                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("submitBtn").innerHTML = "Submit";
+                document.getElementById("scanSection").style.display = "none";
+                document.getElementById("loginSection").style.display = "block";
             })
             .catch(error => {
                 console.error("Error:", error);
                 alert("There was an error with the request. Please try again.");
-            })
-            .finally(() => {
-                // Re-enable button & hide loading message after request completes
                 document.getElementById("submitBtn").disabled = false;
-                document.getElementById("loadingMessage").style.display = "none";
+                document.getElementById("submitBtn").innerHTML = "Submit";
             });
-        }
-
-        function resetForm() {
-            document.getElementById("scanSection").style.display = "none";
-            document.getElementById("actionSection").style.display = "none";
-            document.getElementById("loginSection").style.display = "block";
-
-            document.getElementById('ambulanceInput').value = '';
-            document.getElementById('barcodeInput').value = '';
-            document.querySelector('input[name="actionType"][value="out"]').checked = true;
-
-            Quagga.stop();
         }
     </script>
 </head>
-<body>
-    <h2>Drug Bag Tracker V2.5</h2>
-    <div id="loginSection">
-        <label>Enter Ambulance Number:</label>
-        <input type="text" id="ambulanceInput" maxlength="4">
-        <button onclick="setAmbulanceNumber()">Start</button>
-    </div>
-    <div id="scanSection" style="display:none;">
-        <h3>Scan Drug Bag</h3>
-        <div id="scanner-container" style="width: 100%; height: 300px;"></div>
-        <input type="text" id="barcodeInput" placeholder="Scan barcode here" readonly>
-        <br>
-        <div id="actionSection" style="display:none;">
-            <label><input type="radio" name="actionType" value="out" checked> Book Out</label>
-            <label><input type="radio" name="actionType" value="in"> Book In</label>
-            <br>
-            <button id="submitBtn" onclick="logScan()">Submit</button>
-            <p id="loadingMessage" style="display:none; color: red;">Please wait...</p>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Drug Bag Tracker V2.1</h2>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
+            <label class="form-label">Enter Ambulance Number:</label>
+            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 1234">
+            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Start</button>
+        </div>
+
+        <!-- Scan Section -->
+        <div id="scanSection" class="card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Scan Drug Bag</h3>
+            <form id="scanForm">
+                <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scan barcode here">
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="actionType" value="out" checked>
+                    <label class="form-check-label">Book Out</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="actionType" value="in">
+                    <label class="form-check-label">Book In</label>
+                </div>
+
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
+            </form>
         </div>
     </div>
+
+    <!-- Bootstrap JS (Optional, needed for some features like modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
