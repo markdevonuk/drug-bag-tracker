@@ -59,15 +59,11 @@
             .then(response => {
                 console.log("Request sent");
                 alert("Scan successfully logged!");
-                // Reset only the barcode input and disable the submit button until the next scan
-                document.getElementById("barcodeInput").value = ""; // Clear barcode field
+                document.getElementById("scanForm").reset();
                 document.getElementById("submitBtn").disabled = false;
                 document.getElementById("submitBtn").innerHTML = "Submit";
-                // Optionally reset the action selection to default
-                document.querySelector('input[name="actionType"][value="out"]').checked = true;
-
-                // Restart the scanner for the next scan
-                restartScanner();
+                document.getElementById("scanSection").style.display = "none";
+                document.getElementById("loginSection").style.display = "block";
             })
             .catch(error => {
                 console.error("Error:", error);
@@ -99,27 +95,16 @@
             });
 
             Quagga.onDetected(function (data) {
-                // Fill barcode input field with scanned barcode
                 document.getElementById("barcodeInput").value = data.codeResult.code;
-                // Pause the scanner once a barcode is detected
                 Quagga.stop();
-                // Enable form submission and allow action selection
-                document.getElementById("submitBtn").disabled = false;
             });
-        }
-
-        // Function to restart the barcode scanner after form submission
-        function restartScanner() {
-            document.getElementById("barcodeInput").value = ""; // Reset barcode input
-            document.getElementById("submitBtn").disabled = true; // Disable the submit button until scan
-            Quagga.start(); // Restart the scanner
         }
     </script>
 </head>
 <body class="bg-light">
 
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
 
         <!-- Login Section -->
         <div id="loginSection" class="card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -132,14 +117,11 @@
         <div id="scanSection" class="card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Scan Drug Bag</h3>
 
-            <!-- Live Camera Stream for Barcode Scanning -->
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
 
             <form id="scanForm">
-                <!-- Display scanned barcode -->
                 <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
                 
-                <!-- Action selection (Book In / Book Out) -->
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="actionType" value="out" checked>
                     <label class="form-check-label">Book Out</label>
@@ -149,8 +131,7 @@
                     <label class="form-check-label">Book In</label>
                 </div>
 
-                <!-- Submit Button -->
-                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()" disabled>Submit</button>
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="scanBarcode()">Submit</button>
             </form>
         </div>
     </div>
