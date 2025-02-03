@@ -39,14 +39,14 @@
             Quagga.onDetected(function(result) {
                 Quagga.stop();
                 drugBagID = result.codeResult.code;
-                document.getElementById("barcodeDisplay").innerText = drugBagID;
+                document.getElementById("barcodeInput").value = drugBagID;
                 showStep(3);
             });
         }
         
         function setAction(choice) {
             action = choice;
-            confirmSubmission();
+            showStep(4);
         }
         
         function confirmSubmission() {
@@ -62,7 +62,7 @@
                 alert("Submission Successful");
                 showStep(1);
                 document.getElementById("ambulanceInput").value = "";
-                document.getElementById("barcodeDisplay").innerText = "";
+                document.getElementById("barcodeInput").value = "";
                 ambulanceNumber = "";
                 drugBagID = "";
                 action = "";
@@ -74,7 +74,7 @@
     </script>
 </head>
 <body class="container py-5">
-    <h2 class="text-center">Drug Bag Tracker v1</h2>
+    <h2 class="text-center">Drug Bag Tracker V2.1</h2>
     
     <div id="step1" class="step">
         <h3>Enter Ambulance Number</h3>
@@ -85,16 +85,22 @@
     <div id="step2" class="step" style="display:none;">
         <h3>Scan Drug Bag</h3>
         <video id="scanner" class="w-100"></video>
-        <p>Scanning...</p>
+        <input type="text" id="barcodeInput" class="form-control mt-3" placeholder="Scanned barcode will appear here" readonly>
+        <button class="btn btn-primary mt-3" onclick="showStep(3)">Next</button>
     </div>
     
     <div id="step3" class="step" style="display:none;">
-        <h3>Confirm Drug Bag ID</h3>
-        <p><strong>Scanned ID:</strong> <span id="barcodeDisplay"></span></p>
+        <h3>Choose Action</h3>
         <button class="btn btn-success" onclick="setAction('in')">Book In</button>
         <button class="btn btn-danger" onclick="setAction('out')">Book Out</button>
     </div>
+    
+    <div id="step4" class="step" style="display:none;">
+        <h3>Confirm Submission</h3>
+        <button class="btn btn-primary" onclick="confirmSubmission()">Confirm</button>
+    </div>
 </body>
 </html>
+
 
 
