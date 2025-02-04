@@ -100,10 +100,14 @@
                     } else {
                         console.log("Invalid barcode format. Please try again.");
                         alert("Invalid barcode format. Please try again."); // Error feedback
+                        Quagga.stop(); // Stop the scanner on error
+                        enableManualEntry(); // Allow manual entry
                     }
                 } else {
                     console.log("No valid barcode detected. Please try again.");
                     alert("No valid barcode detected. Please try again."); // Error feedback
+                    Quagga.stop(); // Stop the scanner on error
+                    enableManualEntry(); // Allow manual entry
                 }
             });
         }
@@ -176,7 +180,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.4</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
 
         <!-- Step 1: Input Ambulance Number -->
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
