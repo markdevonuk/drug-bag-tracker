@@ -11,15 +11,32 @@
     <!-- QuaggaJS for Barcode Scanning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
+    <style>
+        .report-table {
+            margin-top: 20px;
+        }
+        .report-table th, .report-table td {
+            text-align: center;
+        }
+        #scanner {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+
     <script>
         let ambulanceNumber = "";
         let drugBagID = "";
 
+        // Show the selected screen and hide others
         function showScreen(screenId) {
             document.querySelectorAll(".screen").forEach(screen => screen.style.display = "none");
             document.getElementById(screenId).style.display = "block";
         }
 
+        // Set the ambulance number and proceed to the scan screen
         function setAmbulanceNumber() {
             ambulanceNumber = document.getElementById("ambulanceInput").value.trim();
             if (ambulanceNumber.length === 4 && !isNaN(ambulanceNumber)) {
@@ -30,15 +47,35 @@
             }
         }
 
+        // Start the barcode scanner
         function startScanner() {
             Quagga.init({
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
                     target: document.querySelector("#scanner"),
-                    constraints: { facingMode: "environment" }
+                    constraints: {
+                        facingMode: "environment", // Use the rear camera
+                        width: 640, // Set a fixed width for the camera feed
+                        height: 480 // Set a fixed height for the camera feed
+                    }
                 },
-                decoder: { readers: ["code_128_reader", "ean_reader", "ean_8_reader"] }
+                decoder: {
+                    readers: ["code_128_reader"], // Focus on Code 128 barcodes (most common for drug bags)
+                    multiple: false // Disable multiple barcode detection
+                },
+                locator: {
+                    halfSample: true, // Improve detection in low-light conditions
+                    patchSize: "medium" // Adjust the size of the detection area
+                },
+                locate: true, // Enable visual feedback for barcode detection
+                numOfWorkers: 4, // Use multiple workers for better performance
+                frequency: 10, // Check for barcodes every 10ms
+                debug: {
+                    drawBoundingBox: true, // Draw a box around detected barcodes (for debugging)
+                    showCanvas: true, // Show the camera feed canvas (for debugging)
+                    showPatches: true // Show detected patches (for debugging)
+                }
             }, function (err) {
                 if (err) {
                     console.error(err);
@@ -48,14 +85,37 @@
                 Quagga.start();
             });
 
+            // Handle detected barcodes
             Quagga.onDetected(function (data) {
-                drugBagID = data.codeResult.code;
-                document.getElementById("barcodeInput").value = drugBagID;
-                Quagga.stop();
-                showScreen("actionScreen");
+                if (data.codeResult && data.codeResult.code) {
+                    var scannedCode = data.codeResult.code;
+                    console.log("Scanned Code:", scannedCode);
+
+                    // Validate the scanned barcode
+                    if (isValidBarcode(scannedCode)) {
+                        drugBagID = scannedCode;
+                        document.getElementById("barcodeInput").value = drugBagID;
+                        Quagga.stop();
+                        showScreen("actionScreen");
+                        alert("Barcode scanned successfully!"); // Success feedback
+                    } else {
+                        console.log("Invalid barcode format. Please try again.");
+                        alert("Invalid barcode format. Please try again."); // Error feedback
+                    }
+                } else {
+                    console.log("No valid barcode detected. Please try again.");
+                    alert("No valid barcode detected. Please try again."); // Error feedback
+                }
             });
         }
 
+        // Validate the barcode format
+        function isValidBarcode(barcode) {
+            // Example: Check if the barcode is 10 digits long and numeric
+            return barcode.length === 10 && !isNaN(barcode);
+        }
+
+        // Submit the scan data to the server
         function submitScan() {
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
@@ -92,6 +152,7 @@
             });
         }
 
+        // Reset the form and return to the login screen
         function resetForm() {
             ambulanceNumber = "";
             drugBagID = "";
@@ -100,6 +161,23 @@
             document.getElementById("submitBtn").innerHTML = "Submit";
             Quagga.stop(); // Stop the scanner
             showScreen("loginScreen");
+        }
+
+        // Enable manual barcode entry
+        function enableManualEntry() {
+            showScreen("manualEntryScreen");
+        }
+
+        // Submit manually entered barcode
+        function submitManualEntry() {
+            var manualBarcode = document.getElementById("manualBarcodeInput").value.trim();
+            if (isValidBarcode(manualBarcode)) {
+                drugBagID = manualBarcode;
+                document.getElementById("barcodeInput").value = drugBagID;
+                showScreen("actionScreen");
+            } else {
+                alert("Invalid barcode format. Please try again.");
+            }
         }
     </script>
 </head>
@@ -118,9 +196,10 @@
         <!-- Step 2: Scan Barcode -->
         <div id="scanScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Scan Drug Bag</h3>
-            <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
+            <div id="scanner"></div>
             <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
-            <button class="btn btn-secondary w-100" onclick="resetForm()">Reset</button>
+            <button class="btn btn-secondary w-100 mb-2" onclick="resetForm()">Reset</button>
+            <button class="btn btn-warning w-100" onclick="enableManualEntry()">Enter Barcode Manually</button>
         </div>
 
         <!-- Step 3: Choose Action -->
@@ -137,6 +216,14 @@
                 </div>
                 <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="submitScan()">Submit</button>
             </form>
+        </div>
+
+        <!-- Manual Entry Screen -->
+        <div id="manualEntryScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Enter Barcode Manually</h3>
+            <input type="text" id="manualBarcodeInput" class="form-control mb-3" placeholder="Enter barcode number">
+            <button class="btn btn-primary w-100 mb-2" onclick="submitManualEntry()">Submit</button>
+            <button class="btn btn-secondary w-100" onclick="resetForm()">Cancel</button>
         </div>
     </div>
 
