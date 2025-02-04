@@ -56,7 +56,7 @@
         }
 
         function checkBagStatus() {
-            fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?drugBagID=' + drugBagID)
+            fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec?drugBagID=' + drugBagID)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "Out") {
@@ -72,37 +72,68 @@
                 });
         }
 
-        function submitScan() {
-            let action = document.querySelector('input[name="actionType"]:checked').value;
-            let status = action === "out" ? "Out" : "In";
-            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+       function submitScan() {
+    let action = document.querySelector('input[name="actionType"]:checked').value;
 
-            document.getElementById("submitBtn").disabled = true;
-            document.getElementById("submitBtn").innerHTML = "Submitting...";
+    // Step 1: Check Bag Status from Google Sheets
+    fetch(`https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec?drugBagID=${drugBagID}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("Error checking bag status. Please try again.");
+                return;
+            }
 
-            fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: action,
-                    ambulanceNumber: ambulanceNumber,
-                    drugBagID: drugBagID,
-                    status: status,
-                    lastSeen: lastSeen
-                }),
-                mode: 'no-cors'
-            })
-            .then(response => {
-                alert("Scan successfully logged!");
-                resetForm();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("There was an error with the request. Please try again.");
-                document.getElementById("submitBtn").disabled = false;
-                document.getElementById("submitBtn").innerHTML = "Submit";
-            });
-        }
+            let lastStatus = data.status;
+            let needsAutoCheckIn = (lastStatus === "Out" && action === "out");
+
+            if (needsAutoCheckIn) {
+                let confirmMsg = `This bag is still booked out. It will be booked back in before being assigned to Ambulance ${ambulanceNumber}. Continue?`;
+                if (!confirm(confirmMsg)) return;
+            }
+
+            // Step 2: Proceed with Submission
+            processScan(action, needsAutoCheckIn);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Error checking bag status. Please try again.");
+        });
+}
+
+function processScan(action, needsAutoCheckIn) {
+    let status = action === "out" ? "Out" : "In";
+    let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+
+    document.getElementById("submitBtn").disabled = true;
+    document.getElementById("submitBtn").innerHTML = "Submitting...";
+
+    let requestBody = {
+        action: action,
+        ambulanceNumber: ambulanceNumber,
+        drugBagID: drugBagID,
+        status: status,
+        lastSeen: lastSeen
+    };
+
+    fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+        mode: 'no-cors'
+    })
+    .then(() => {
+        alert("Scan successfully logged!");
+        resetForm();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was an error with the request. Please try again.");
+        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("submitBtn").innerHTML = "Submit";
+    });
+}
+
 
         function resetForm() {
             ambulanceNumber = "";
@@ -116,7 +147,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label class="form-label">Enter Ambulance Number:</label>
