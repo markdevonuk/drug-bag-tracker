@@ -55,6 +55,23 @@
             });
         }
 
+        function checkBagStatus() {
+            fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?drugBagID=' + drugBagID)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "Out") {
+                        if (!confirm("This bag is still booked out. It will be booked back in before being booked out again. Continue?")) {
+                            return;
+                        }
+                    }
+                    submitScan();
+                })
+                .catch(error => {
+                    console.error("Error checking status:", error);
+                    alert("Error checking bag status. Please try again.");
+                });
+        }
+
         function submitScan() {
             let action = document.querySelector('input[name="actionType"]:checked').value;
             let status = action === "out" ? "Out" : "In";
@@ -63,7 +80,7 @@
             document.getElementById("submitBtn").disabled = true;
             document.getElementById("submitBtn").innerHTML = "Submitting...";
 
-            fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+            fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -76,7 +93,6 @@
                 mode: 'no-cors'
             })
             .then(response => {
-                console.log("Request sent");
                 alert("Scan successfully logged!");
                 resetForm();
             })
@@ -100,23 +116,20 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
 
-        <!-- Step 1: Input Ambulance Number -->
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label class="form-label">Enter Ambulance Number:</label>
-            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 1234">
+            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4">
             <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
         </div>
 
-        <!-- Step 2: Scan Barcode -->
         <div id="scanScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Scan Drug Bag</h3>
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
-            <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
+            <input type="text" id="barcodeInput" class="form-control mb-3" readonly>
         </div>
 
-        <!-- Step 3: Choose Action -->
         <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Book In or Out</h3>
             <form id="scanForm">
@@ -128,13 +141,11 @@
                     <input class="form-check-input" type="radio" name="actionType" value="in">
                     <label class="form-check-label">Book In</label>
                 </div>
-                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="submitScan()">Submit</button>
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="checkBagStatus()">Submit</button>
             </form>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
+
