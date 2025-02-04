@@ -56,111 +56,41 @@
             });
         }
 
-function submitScan() {
-    let action = document.querySelector('input[name="actionType"]:checked').value;
-    let status = action === "out" ? "Out" : "In";
-    let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+        function submitScan() {
+            let action = document.querySelector('input[name="actionType"]:checked').value;
+            let status = action === "out" ? "Out" : "In";
+            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-    document.getElementById("submitBtn").disabled = true;
-    document.getElementById("submitBtn").innerHTML = `
-        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-        Submitting...
-    `;
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("submitBtn").innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Submitting...
+            `;
 
-    // First, check if the bag is already signed out
-    fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: "check", // Special action to check if the bag is signed out
-            ambulanceNumber: ambulanceNumber,
-            drugBagID: drugBagID,
-            status: status,
-            lastSeen: lastSeen
-        }),
-        mode: 'no-cors'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
+            fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                }),
+                mode: 'no-cors'
+            })
+            .then(response => {
+                console.log("Request sent");
+                alert("Scan successfully logged!");
+                resetForm();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was an error with the request. Please try again.");
+                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("submitBtn").innerHTML = "Submit";
+            });
         }
-        return response.text(); // Read the response as text
-    })
-    .then(text => {
-        try {
-            const data = JSON.parse(text); // Try to parse the response as JSON
-            if (data.status === "Success" && data.message.includes("already signed out")) {
-                // If the bag is already signed out, confirm with the user
-                if (confirm("This bag is already signed out to another ambulance. Do you want to book it back in and then out to the new ambulance?")) {
-                    // Proceed with the submission
-                    fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: action,
-                            ambulanceNumber: ambulanceNumber,
-                            drugBagID: drugBagID,
-                            status: status,
-                            lastSeen: lastSeen
-                        }),
-                        mode: 'no-cors'
-                    })
-                    .then(response => {
-                        console.log("Request sent");
-                        alert("Bag has been booked back in and then out to the new ambulance.");
-                        resetForm();
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        alert("There was an error with the request. Please try again.");
-                        document.getElementById("submitBtn").disabled = false;
-                        document.getElementById("submitBtn").innerHTML = "Submit";
-                    });
-                } else {
-                    // User canceled the action
-                    document.getElementById("submitBtn").disabled = false;
-                    document.getElementById("submitBtn").innerHTML = "Submit";
-                }
-            } else {
-                // If the bag is not signed out, proceed as normal
-                fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: action,
-                        ambulanceNumber: ambulanceNumber,
-                        drugBagID: drugBagID,
-                        status: status,
-                        lastSeen: lastSeen
-                    }),
-                    mode: 'no-cors'
-                })
-                .then(response => {
-                    console.log("Request sent");
-                    alert("Scan successfully logged!");
-                    resetForm();
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    alert("There was an error with the request. Please try again.");
-                    document.getElementById("submitBtn").disabled = false;
-                    document.getElementById("submitBtn").innerHTML = "Submit";
-                });
-            }
-        } catch (error) {
-            console.error("Error parsing JSON:", error);
-            alert("There was an error checking the bag status. Please try again.");
-            document.getElementById("submitBtn").disabled = false;
-            document.getElementById("submitBtn").innerHTML = "Submit";
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("There was an error checking the bag status. Please try again.");
-        document.getElementById("submitBtn").disabled = false;
-        document.getElementById("submitBtn").innerHTML = "Submit";
-    });
-}
 
         function resetForm() {
             ambulanceNumber = "";
@@ -175,7 +105,7 @@ function submitScan() {
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
 
         <!-- Step 1: Input Ambulance Number -->
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -214,3 +144,4 @@ function submitScan() {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
