@@ -30,31 +30,46 @@
             }
         }
 
-        function startScanner() {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector("#scanner"),
-                    constraints: { facingMode: "environment" }
-                },
-                decoder: { readers: ["code_128_reader", "ean_reader", "ean_8_reader"] }
-            }, function (err) {
-                if (err) {
-                    console.error(err);
-                    alert("Failed to start the scanner. Please check your camera permissions.");
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function (data) {
-                drugBagID = data.codeResult.code;
-                document.getElementById("barcodeInput").value = drugBagID;
-                Quagga.stop();
-                showScreen("actionScreen");
-            });
+function startScanner() {
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector("#scanner"),
+            constraints: { facingMode: "environment" } // Use rear camera
+        },
+        decoder: {
+            readers: ["code_128_reader", "ean_reader", "ean_8_reader"], // Add more readers if needed
+        },
+        locator: {
+            patchSize: "medium", // Adjust for better detection
+            halfSample: true
+        },
+        numOfWorkers: 4, // Improve performance
+        frequency: 10 // Adjust scan frequency
+    }, function (err) {
+        if (err) {
+            console.error(err);
+            alert("Failed to start the scanner. Please check your camera permissions.");
+            return;
         }
+        Quagga.start();
+    });
+
+    Quagga.onDetected(function (data) {
+        drugBagID = data.codeResult.code;
+        console.log("Barcode detected:", drugBagID); // Log the detected barcode
+        document.getElementById("barcodeInput").value = drugBagID;
+        Quagga.stop();
+        showScreen("actionScreen");
+    });
+
+    Quagga.onProcessed(function(result) {
+        if (result) {
+            console.log("Detection result:", result); // Log detection results for debugging
+        }
+    });
+}
 
         function submitScan() {
             let action = document.querySelector('input[name="actionType"]:checked').value;
