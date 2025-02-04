@@ -96,7 +96,6 @@
                         document.getElementById("barcodeInput").value = drugBagID;
                         Quagga.stop();
                         showScreen("actionScreen");
-                        alert("Barcode scanned successfully!"); // Success feedback
                     } else {
                         console.log("Invalid barcode format. Please try again.");
                         alert("Invalid barcode format. Please try again."); // Error feedback
@@ -136,11 +135,8 @@
             let status = action === "out" ? "Out" : "In";
             let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            document.getElementById("submitBtn").disabled = true;
-            document.getElementById("submitBtn").innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Submitting...
-            `;
+            // Disable buttons to prevent multiple submissions
+            document.querySelectorAll("#actionScreen .btn").forEach(button => button.disabled = true);
 
             fetch('https://script.google.com/macros/s/AKfycbzOdXyj_xx19ex5KrwpjZzMw_Ldlf30Z8Sw7ATlBUvmNDNweZ7Zua1-epjyB7j83ssOEQ/exec', {
                 method: 'POST',
@@ -156,14 +152,12 @@
             })
             .then(response => {
                 console.log("Request sent");
-                alert("Scan successfully logged!");
                 resetForm();
             })
             .catch(error => {
                 console.error("Error:", error);
                 alert("There was an error with the request. Please try again.");
-                document.getElementById("submitBtn").disabled = false;
-                document.getElementById("submitBtn").innerHTML = "Submit";
+                document.querySelectorAll("#actionScreen .btn").forEach(button => button.disabled = false);
             });
         }
 
@@ -171,8 +165,6 @@
             ambulanceNumber = "";
             drugBagID = "";
             document.getElementById("scanForm").reset();
-            document.getElementById("submitBtn").disabled = false;
-            document.getElementById("submitBtn").innerHTML = "Submit";
             Quagga.stop(); // Stop the scanner
             showScreen("loginScreen");
         }
@@ -180,7 +172,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
 
         <!-- Step 1: Input Ambulance Number -->
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
