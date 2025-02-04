@@ -43,6 +43,7 @@
                 if (err) {
                     console.error(err);
                     alert("Failed to start the scanner. Please check your camera permissions.");
+                    showScreen("manualEntryScreen"); // Fallback to manual entry
                     return;
                 }
                 Quagga.start();
@@ -54,6 +55,15 @@
                 Quagga.stop();
                 showScreen("actionScreen");
             });
+        }
+
+        function useManualBarcode() {
+            drugBagID = document.getElementById("manualBarcodeInput").value.trim();
+            if (drugBagID) {
+                showScreen("actionScreen");
+            } else {
+                alert("Please enter a valid barcode.");
+            }
         }
 
         function submitScan() {
@@ -80,6 +90,9 @@
                 mode: 'no-cors'
             })
             .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok.");
+                }
                 console.log("Request sent");
                 alert("Scan successfully logged!");
                 resetForm();
@@ -105,7 +118,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1a</h2>
 
         <!-- Step 1: Input Ambulance Number -->
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -120,7 +133,16 @@
             <h3 class="text-center">Scan Drug Bag</h3>
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
             <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
-            <button class="btn btn-secondary w-100" onclick="resetForm()">Reset</button>
+            <button class="btn btn-secondary w-100 mb-3" onclick="showScreen('loginScreen')">Back</button>
+            <button class="btn btn-secondary w-100" onclick="showScreen('manualEntryScreen')">Manual Entry</button>
+        </div>
+
+        <!-- Step 2a: Manual Barcode Entry -->
+        <div id="manualEntryScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Manual Barcode Entry</h3>
+            <input type="text" id="manualBarcodeInput" class="form-control mb-3" placeholder="Enter barcode manually">
+            <button class="btn btn-primary w-100" onclick="useManualBarcode()">Submit</button>
+            <button class="btn btn-secondary w-100 mt-2" onclick="showScreen('scanScreen')">Back to Scanner</button>
         </div>
 
         <!-- Step 3: Choose Action -->
@@ -136,6 +158,7 @@
                     <label class="form-check-label" for="actionIn">Book In</label>
                 </div>
                 <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="submitScan()">Submit</button>
+                <button class="btn btn-secondary w-100 mt-2" onclick="showScreen('scanScreen')">Back</button>
             </form>
         </div>
     </div>
