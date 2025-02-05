@@ -9,7 +9,7 @@
 <body class="container mt-5">
   <div class="card">
     <div class="card-body">
-      <h1 class="card-title">Drug Bag Tracker v1</h1>
+      <h1 class="card-title">Drug Bag Tracker v2</h1>
       <form id="trackerForm">
         <div class="mb-3">
           <label for="esr" class="form-label">ESR (Ambulance Number)</label>
@@ -45,12 +45,14 @@
 
       const scriptUrl = 'https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec'; // Replace with your web app URL
 
+      const formData = new FormData();
+      formData.append('esr', esr);
+      formData.append('drugBagId', drugBagId);
+      formData.append('action', action);
+
       fetch(scriptUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ esr, drugBagId, action }),
+        body: formData,
       })
         .then(response => response.json())
         .then(data => {
