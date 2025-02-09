@@ -2,58 +2,145 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Drug Bag Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- QuaggaJS for Barcode Scanning -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
     <script>
         let ambulanceNumber = "";
-        
-        function setAmbulanceNumber() {
-            ambulanceNumber = document.getElementById("ambulanceNumber").value;
-            document.getElementById("step1").classList.add("d-none");
-            document.getElementById("step2").classList.remove("d-none");
+        let drugBagID = "";
+
+        function showScreen(screenId) {
+            document.querySelectorAll(".screen").forEach(screen => screen.style.display = "none");
+            document.getElementById(screenId).style.display = "block";
         }
-        
-        function submitAction(action) {
-            let drugBagID = document.getElementById("drugBagID").value;
-            if (!drugBagID) {
-                alert("Please enter a Drug Bag ID.");
-                return;
+
+        function setAmbulanceNumber() {
+            ambulanceNumber = document.getElementById("ambulanceInput").value.trim();
+            if (ambulanceNumber.length === 4 && !isNaN(ambulanceNumber)) {
+                showScreen("scanScreen");
+                startScanner();
+            } else {
+                alert("Please enter a valid 4-digit ambulance number.");
             }
-            
-            let requestData = {
-                action: action,
-                ambulanceNumber: ambulanceNumber,
-                drugBagID: drugBagID
-            };
-            
-            fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?data=${encodeURIComponent(JSON.stringify(requestData))}`)
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestData)
+        }
+
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector("#scanner"),
+                    constraints: { facingMode: "environment" }
+                },
+                decoder: { readers: ["code_128_reader", "ean_reader", "ean_8_reader"] }
+            }, function (err) {
+                if (err) {
+                    console.error(err);
+                    alert("Failed to start the scanner. Please check your camera permissions.");
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function (data) {
+                drugBagID = data.codeResult.code;
+                document.getElementById("barcodeInput").value = drugBagID;
+                Quagga.stop();
+                showScreen("actionScreen");
+            });
+        }
+
+        function submitScan() {
+            let action = document.querySelector('input[name="actionType"]:checked').value;
+            let status = action === "out" ? "Out" : "In";
+            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("submitBtn").innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Submitting...
+            `;
+
+            fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                }),
+                mode: 'no-cors'
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                document.getElementById("drugBagID").value = "";
+            .then(response => {
+                console.log("Request sent");
+                alert("Scan successfully logged!");
+                resetForm();
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was an error with the request. Please try again.");
+                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("submitBtn").innerHTML = "Submit";
+            });
+        }
+
+        function resetForm() {
+            ambulanceNumber = "";
+            drugBagID = "";
+            document.getElementById("scanForm").reset();
+            document.getElementById("submitBtn").disabled = false;
+            document.getElementById("submitBtn").innerHTML = "Submit";
+            Quagga.stop(); // Stop the scanner
+            showScreen("loginScreen");
         }
     </script>
 </head>
-<body class="container mt-5">
-    <div id="step1">
-        <h2>Enter Ambulance Number 2</h2>
-        <input type="text" id="ambulanceNumber" class="form-control mb-3" placeholder="Enter 4-digit number">
-        <button class="btn btn-primary" onclick="setAmbulanceNumber()">Continue</button>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
+
+        <!-- Step 1: Input Ambulance Number -->
+        <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
+            <label for="ambulanceInput" class="form-label">Enter Ambulance Number:</label>
+            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 1234" aria-describedby="ambulanceHelp">
+            <small id="ambulanceHelp" class="form-text text-muted">Enter a 4-digit number.</small>
+            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
+        </div>
+
+        <!-- Step 2: Scan Barcode -->
+        <div id="scanScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Scan Drug Bag</h3>
+            <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
+            <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
+            <button class="btn btn-secondary w-100" onclick="resetForm()">Reset</button>
+        </div>
+
+        <!-- Step 3: Choose Action -->
+        <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Book In or Out</h3>
+            <form id="scanForm">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="actionType" value="out" id="actionOut" checked>
+                    <label class="form-check-label" for="actionOut">Book Out</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="actionType" value="in" id="actionIn">
+                    <label class="form-check-label" for="actionIn">Book In</label>
+                </div>
+                <button id="submitBtn" type="button" class="btn btn-success w-100" onclick="submitScan()">Submit</button>
+            </form>
+        </div>
     </div>
-    
-    <div id="step2" class="d-none">
-        <h2>Scan Drug Bag</h2>
-        <input type="text" id="drugBagID" class="form-control mb-3" placeholder="Enter 4-digit ID">
-        <button class="btn btn-success me-2" onclick="submitAction('OUT')">Book Out</button>
-        <button class="btn btn-warning" onclick="submitAction('IN')">Book In</button>
-    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
