@@ -65,11 +65,57 @@
                 }
             });
         }
+
+        function submitScan() {
+            let action = document.querySelector('input[name="actionType"]:checked').value;
+            let status = action === "out" ? "Out" : "In";
+            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("submitBtn").innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Submitting...
+            `;
+
+            fetch('https://script.google.com/macros/s/AKfycbwVjQvNOS5XZWHur1JFp92w9mGS8HqEFpnwATmkPbtsBsc_uRCYOeiTts3SZ72bzzfMvg/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: action,
+                    ambulanceNumber: ambulanceNumber,
+                    drugBagID: drugBagID,
+                    status: status,
+                    lastSeen: lastSeen
+                }),
+                mode: 'no-cors'
+            })
+            .then(response => {
+                console.log("Request sent");
+                alert("Scan successfully logged!");
+                resetForm();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was an error with the request. Please try again.");
+                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("submitBtn").innerHTML = "Submit";
+            });
+        }
+
+        function resetForm() {
+            ambulanceNumber = "";
+            drugBagID = "";
+            document.getElementById("scanForm").reset();
+            document.getElementById("submitBtn").disabled = false;
+            document.getElementById("submitBtn").innerHTML = "Submit";
+            Quagga.stop(); // Stop the scanner
+            showScreen("loginScreen");
+        }
     </script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V3.0</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V5</h2>
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label for="ambulanceInput" class="form-label">Enter Ambulance Number:</label>
@@ -84,7 +130,6 @@
             <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
         </div>
 
-        <!-- Step 3: Choose Action -->
         <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Book In or Out</h3>
             <form id="scanForm">
@@ -104,3 +149,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
