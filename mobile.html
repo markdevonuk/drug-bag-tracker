@@ -107,56 +107,35 @@
             Quagga.stop();
             showScreen("loginScreen");
         }
-
-        function loadOverdueBags() {
-            fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?action=getOverdueBags')
-                .then(response => response.json())
-                .then(data => {
-                    let tableBody = document.getElementById("overdueBagsTableBody");
-                    tableBody.innerHTML = "";
-                    data.forEach(bag => {
-                        let row = `<tr>
-                            <td>${bag.drugBagID}</td>
-                            <td>${bag.lastSeen}</td>
-                            <td>${bag.timestamp}</td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-                })
-                .catch(error => console.error("Error fetching overdue bags:", error));
-        }
     </script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
-        
-        <a href="report.html" class="btn btn-info mb-3">View Overdue Drug Bags</a>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label for="ambulanceInput" class="form-label">Enter Ambulance Number:</label>
             <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="4" placeholder="e.g. 1234">
             <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
         </div>
+
+        <div id="scanScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Scan Drug Bag</h3>
+            <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
+            <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
+            <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+        </div>
+
+        <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+            <h3 class="text-center">Book In or Out</h3>
+            <button class="btn btn-success w-100 mb-2" onclick="submitScan('in')">Sign Bag In</button>
+            <button class="btn btn-danger w-100" onclick="submitScan('out')">Sign Bag Out</button>
+        </div>
     </div>
 
-    <div class="container mt-5" id="overdueBagsScreen" style="display: none;">
-        <h3>Overdue Drug Bags (More than 13 hours)</h3>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Drug Bag ID</th>
-                    <th>Last Seen</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody id="overdueBagsTableBody"></tbody>
-        </table>
-        <button class="btn btn-secondary" onclick="loadOverdueBags()">Refresh</button>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
 
 
 
