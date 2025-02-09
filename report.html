@@ -2,70 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drug Bag Tracker</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .container { width: 80%; margin: auto; }
-        h2 { text-align: center; }
-        .section { margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Drug Bag Tracking Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h2>Drug Bag Tracker</h2>
-        
-        <div class="section">
-            <h3>Signed Out Bags</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Drug Bag ID</th>
-                        <th>Ambulance Number</th>
-                    </tr>
-                </thead>
-                <tbody id="signedOutTable">
-                </tbody>
-            </table>
+<body class="container mt-4">
+    <h2 class="mb-3">Drug Bag Status</h2>
+    <button class="btn btn-primary mb-3" onclick="window.location.href='mobile.html'">Back</button>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Signed Out</h4>
+            <ul id="signedOutList" class="list-group"></ul>
         </div>
-
-        <div class="section">
-            <h3>In Storage</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Drug Bag ID</th>
-                    </tr>
-                </thead>
-                <tbody id="inStorageTable">
-                </tbody>
-            </table>
+        <div class="col-md-6">
+            <h4>In Storage</h4>
+            <ul id="inStorageList" class="list-group"></ul>
         </div>
     </div>
-
     <script>
-        async function fetchData() {
-            const response = await fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec');
-            const data = await response.json();
-
-            const signedOutTable = document.getElementById('signedOutTable');
-            const inStorageTable = document.getElementById('inStorageTable');
-
-            for (const [bagID, ambulance] of Object.entries(data.signedOut)) {
-                let row = `<tr><td>${bagID}</td><td>${ambulance}</td></tr>`;
-                signedOutTable.innerHTML += row;
-            }
-
-            data.inStorage.forEach(bagID => {
-                let row = `<tr><td>${bagID}</td></tr>`;
-                inStorageTable.innerHTML += row;
-            });
-        }
-
-        fetchData();
+        fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec')
+            .then(response => response.json())
+            .then(data => {
+                const signedOutList = document.getElementById('signedOutList');
+                const inStorageList = document.getElementById('inStorageList');
+                
+                Object.entries(data.signedOut).forEach(([bag, ambulance]) => {
+                    let li = document.createElement('li');
+                    li.className = "list-group-item";
+                    li.textContent = `Bag ${bag} - Ambulance ${ambulance}`;
+                    signedOutList.appendChild(li);
+                });
+                
+                data.inStorage.forEach(bag => {
+                    let li = document.createElement('li');
+                    li.className = "list-group-item";
+                    li.textContent = `Bag ${bag}`;
+                    inStorageList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
     </script>
 </body>
 </html>
+
