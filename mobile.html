@@ -36,7 +36,10 @@
                     name: "Live",
                     type: "LiveStream",
                     target: document.querySelector("#scanner"),
-                    constraints: { facingMode: "environment" }
+                    constraints: { 
+                        width: 300,
+                        height: 300,
+                        facingMode: "environment" }
                 },
                 decoder: {
                     readers: ["code_128_reader"]
