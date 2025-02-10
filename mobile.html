@@ -23,8 +23,8 @@
         let ambulanceNumber = "";
         let drugBagID = "";
         let drugsInBag = [
-            { name: 'Drug A', expiryDate: '2025-02-10' },
-            { name: 'Drug B', expiryDate: '2025-03-10' },
+            { name: 'Drug A', expiryDate: '10022025' },  // Example of DDMMYYYY format
+            { name: 'Drug B', expiryDate: '15032025' },  // Example of DDMMYYYY format
             // Add more drugs here...
         ];
 
@@ -145,11 +145,12 @@
 
         // Function to check if any drug is out of date
         function checkDrugExpiry(drugs) {
-            const today = new Date().toISOString().split('T')[0];  // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '');  // Get today's date in DDMMYYYY format
             let isOutOfDate = false;
 
             for (const drug of drugs) {
-                if (drug.expiryDate <= today) {
+                const expiryDate = drug.expiryDate;
+                if (expiryDate <= today) {
                     isOutOfDate = true;
                     break;
                 }
@@ -176,7 +177,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V11</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label for="ambulanceInput" class="form-label">Enter your ESR Number:</label>
@@ -214,6 +215,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 
