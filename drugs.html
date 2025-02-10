@@ -77,55 +77,60 @@
         const bagID = urlParams.get("bag");
         document.getElementById("bagID").innerText = bagID;
 
-        function fetchDrugs() {
-            // Show the spinner and overlay while waiting for data
-            document.getElementById("overlay").style.display = "block";
-            
-            fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?bag=${bagID}`)
-                .then(response => response.json())
-                .then(data => {
-                    const table = document.getElementById("drugTable");
-                    table.innerHTML = "";
-                    let allDrugsExpireAfterToday = true;
+      function fetchDrugs() {
+    // Show the spinner and overlay while waiting for data
+    document.getElementById("overlay").style.display = "block";
+    
+    fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?bag=${bagID}`)
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById("drugTable");
+            table.innerHTML = "";  // Clear the table first
+            let allDrugsExpireAfterToday = true;  // Track if any drug is expired
 
-                    // Sort drugs alphabetically by name
-                    data.sort((a, b) => a.name.localeCompare(b.name));
+            // Sort drugs alphabetically by name
+            data.sort((a, b) => a.name.localeCompare(b.name));
 
-                    data.forEach(drug => {
-                        let expiryDate = formatDate(drug.expiry);
-                        let isExpired = checkExpired(drug.expiry);
+            data.forEach(drug => {
+                let expiryDate = formatDate(drug.expiry);
+                let isExpired = checkExpired(drug.expiry);
 
-                        let row = `
-                            <tr>
-                                <td>${drug.name}</td>
-                                <td>${drug.quantity}</td>
-                                <td class="${isExpired ? 'expired' : ''}">${expiryDate}</td>
-                            </tr>
-                        `;
-                        table.innerHTML += row;
+                // Add drug to the table (show all drugs)
+                let row = `
+                    <tr>
+                        <td>${drug.name}</td>
+                        <td>${drug.quantity}</td>
+                        <td class="${isExpired ? 'expired' : ''}">${expiryDate}</td>
+                    </tr>
+                `;
+                table.innerHTML += row;
 
-                        if (isExpired) {
-                            allDrugsExpireAfterToday = false;
-                        }
-                    });
+                // If any drug is expired, mark the bag as red
+                if (isExpired) {
+                    allDrugsExpireAfterToday = false;
+                }
+            });
 
-                    // Change the bagID color based on expiration status
-                    const bagTitle = document.getElementById("bagID");
-                    if (allDrugsExpireAfterToday) {
-                        bagTitle.classList.add('green-bagID');
-                    } else {
-                        bagTitle.classList.add('red-bagID');
-                    }
+            // Change the bagID color based on whether any drug is expired
+            const bagTitle = document.getElementById("bagID");
+            if (allDrugsExpireAfterToday) {
+                bagTitle.classList.add('green-bagID');
+                bagTitle.classList.remove('red-bagID');  // Remove red if all drugs are fine
+            } else {
+                bagTitle.classList.add('red-bagID');
+                bagTitle.classList.remove('green-bagID');  // Remove green if any drug is expired
+            }
 
-                    // Hide the spinner and overlay once data is loaded
-                    document.getElementById("overlay").style.display = "none";
-                })
-                .catch(err => {
-                    alert("Error fetching drugs: " + err);
-                    // Hide the spinner and overlay in case of error
-                    document.getElementById("overlay").style.display = "none";
-                });
-        }
+            // Hide the spinner and overlay once data is loaded
+            document.getElementById("overlay").style.display = "none";
+        })
+        .catch(err => {
+            alert("Error fetching drugs: " + err);
+            // Hide the spinner and overlay in case of error
+            document.getElementById("overlay").style.display = "none";
+        });
+}
+
 
         function formatDate(dateStr) {
             if (!dateStr) return "N/A"; // Handle missing dates
