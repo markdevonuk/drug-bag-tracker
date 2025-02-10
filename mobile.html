@@ -10,6 +10,13 @@
 
     <!-- QuaggaJS for Barcode Scanning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+    #interactive video, #interactive canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+</style>
+
 
     <script>
         let ambulanceNumber = "";
@@ -37,8 +44,6 @@
                     type: "LiveStream",
                     target: document.querySelector("#scanner"),
                     constraints: { 
-                        width: 400,
-                        height: 290,
                         facingMode: "environment" }
                 },
                 decoder: {
@@ -114,7 +119,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V2</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V3</h2>
       
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
