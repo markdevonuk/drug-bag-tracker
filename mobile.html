@@ -37,7 +37,10 @@
                     type: "LiveStream",
                     target: document.querySelector("#scanner"),
                     constraints: { 
-                        facingMode: "environment" }
+                        facingMode: "environment" },
+                        width: { ideal: 300 },
+                        height: { ideal: 250 }
+
                 },
                 decoder: {
                     readers: ["code_128_reader"]
@@ -112,7 +115,7 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.1</h2>
       
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
