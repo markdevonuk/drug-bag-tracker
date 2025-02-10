@@ -32,11 +32,11 @@
 
         function setAmbulanceNumber() {
             ambulanceNumber = document.getElementById("ambulanceInput").value.trim();
-            if (ambulanceNumber.length === 4 && !isNaN(ambulanceNumber)) {
+            if (ambulanceNumber.length === 8 && !isNaN(ambulanceNumber)) {
                 showScreen("scanScreen");
                 startScanner();
             } else {
-                alert("Please enter a valid 4-digit ambulance number.");
+                alert("Please enter a valid 8-digit ESR number.");
             }
         }
 
@@ -134,7 +134,7 @@ function submitScan(action) {
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.3</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.4</h2>
       
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
