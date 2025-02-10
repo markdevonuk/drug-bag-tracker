@@ -30,20 +30,33 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            display: none;
+            display: block; /* Make sure it's shown by default */
+        }
+
+        /* Added overlay background for spinner visibility */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            display: block; /* Make it show when fetching */
         }
     </style>
 </head>
 <body class="bg-light">
-    <div class="container mt-5">
-        <h2 class="text-center">Drugs in Bag <span id="bagID" class=""></span></h2>
-
-        <!-- Loading Spinner -->
-        <div class="spinner-container" id="loadingSpinner">
+    <div class="overlay" id="overlay" style="display: none;">
+        <div class="spinner-container">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
+    </div>
+
+    <div class="container mt-5">
+        <h2 class="text-center">Drugs in Bag <span id="bagID" class=""></span></h2>
 
         <table class="table table-bordered mt-3">
             <thead>
@@ -65,8 +78,8 @@
         document.getElementById("bagID").innerText = bagID;
 
         function fetchDrugs() {
-            // Show the spinner while waiting for data
-            document.getElementById("loadingSpinner").style.display = "block";
+            // Show the spinner and overlay while waiting for data
+            document.getElementById("overlay").style.display = "block";
             
             fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?bag=${bagID}`)
                 .then(response => response.json())
@@ -104,13 +117,13 @@
                         bagTitle.classList.add('red-bagID');
                     }
 
-                    // Hide the spinner once data is loaded
-                    document.getElementById("loadingSpinner").style.display = "none";
+                    // Hide the spinner and overlay once data is loaded
+                    document.getElementById("overlay").style.display = "none";
                 })
                 .catch(err => {
                     alert("Error fetching drugs: " + err);
-                    // Hide the spinner in case of error
-                    document.getElementById("loadingSpinner").style.display = "none";
+                    // Hide the spinner and overlay in case of error
+                    document.getElementById("overlay").style.display = "none";
                 });
         }
 
@@ -140,6 +153,7 @@
     </script>
 </body>
 </html>
+
 
 
 
