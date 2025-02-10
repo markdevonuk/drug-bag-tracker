@@ -76,7 +76,7 @@
                 let scannedCode = data.codeResult.code;
                 let confidence = data.codeResult.decodedCodes[0].error ? data.codeResult.decodedCodes[0].error : 0;
 
-                if (/^\w{10}$/.test(scannedCode) && confidence < 0.1) {
+               if (/^[FP]\d{4}$/.test(scannedCode) && confidence < 0.1) {
                     drugBagID = scannedCode;
                     document.getElementById("barcodeInput").value = drugBagID;
                     Quagga.stop();
@@ -134,7 +134,7 @@ function submitScan(action) {
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.4</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V1.5</h2>
       
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
