@@ -130,11 +130,20 @@ function submitScan(action) {
             Quagga.stop();
             showScreen("loginScreen");
         }
+
+        function openDrugManager() {
+    if (!drugBagID) {
+        alert("Please scan a drug bag first.");
+        return;
+    }
+    window.location.href = `drugs.html?bag=${drugBagID}`;
+}
+
     </script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1.6</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V2</h2>
       
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
@@ -149,7 +158,8 @@ function submitScan(action) {
             <h3 class="text-center">Scan Drug Bag</h3>
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
             <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
-            <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+            <button id="manageDrugsBtn" class="btn btn-info w-100 mb-2" onclick="openDrugManager()">Manage Drugs</button>
+             <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
         </div>
 
      <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
