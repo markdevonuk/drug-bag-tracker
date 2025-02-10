@@ -56,6 +56,9 @@
                     table.innerHTML = "";
                     let allDrugsExpireAfterToday = true;
 
+                    // Sort drugs alphabetically by name
+                    data.sort((a, b) => a.name.localeCompare(b.name));
+
                     data.forEach(drug => {
                         let expiryDate = formatDate(drug.expiry);
                         let isExpired = checkExpired(drug.expiry);
@@ -111,6 +114,7 @@
     </script>
 </body>
 </html>
+
 
 
 
