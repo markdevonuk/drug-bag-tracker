@@ -23,11 +23,27 @@
             color: red !important;
             font-weight: bold;
         }
+
+        /* Spinner styling */
+        .spinner-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
         <h2 class="text-center">Drugs in Bag <span id="bagID" class=""></span></h2>
+
+        <!-- Loading Spinner -->
+        <div class="spinner-container" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
 
         <table class="table table-bordered mt-3">
             <thead>
@@ -49,6 +65,9 @@
         document.getElementById("bagID").innerText = bagID;
 
         function fetchDrugs() {
+            // Show the spinner while waiting for data
+            document.getElementById("loadingSpinner").style.display = "block";
+            
             fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?bag=${bagID}`)
                 .then(response => response.json())
                 .then(data => {
@@ -84,8 +103,15 @@
                     } else {
                         bagTitle.classList.add('red-bagID');
                     }
+
+                    // Hide the spinner once data is loaded
+                    document.getElementById("loadingSpinner").style.display = "none";
                 })
-                .catch(err => alert("Error fetching drugs: " + err));
+                .catch(err => {
+                    alert("Error fetching drugs: " + err);
+                    // Hide the spinner in case of error
+                    document.getElementById("loadingSpinner").style.display = "none";
+                });
         }
 
         function formatDate(dateStr) {
@@ -114,6 +140,7 @@
     </script>
 </body>
 </html>
+
 
 
 
