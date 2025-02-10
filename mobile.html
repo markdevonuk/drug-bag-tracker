@@ -139,15 +139,8 @@ function submitScan(action) {
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label for="ambulanceInput" class="form-label">Enter your ESR Number:</label>
-            <input type="text" id="ambulanceInput" 
-       class="form-control mb-3" 
-       maxlength="8" 
-       placeholder="e.g. 12345678" 
-       inputmode="numeric"
-       pattern="[0-9]{4}"
-       onfocus="enableLiveText()">
-
-            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
+            <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="8" placeholder="e.g. 288900012">
+             <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
              <br><br>
 <button class="btn btn-success w-100 mb-2" onclick="window.location.href='report.html'">Location report</button>
         </div>
