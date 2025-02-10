@@ -85,32 +85,43 @@
             });
         }
 
-        function submitScan(action) {
-            let status = action === "out" ? "Out" : "In";
-            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
+function submitScan(action) {
+    let status = action === "out" ? "Out" : "In";
+    let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-            fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: action,
-                    ambulanceNumber: ambulanceNumber,
-                    drugBagID: drugBagID,
-                    status: status,
-                    lastSeen: lastSeen
-                }),
-                mode: 'no-cors'
-            })
-            .then(response => {
-                console.log("Request sent");
-                alert("Scan successfully logged!");
-                resetForm();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("There was an error with the request. Please try again.");
-            });
-        }
+    // Disable buttons & show spinner
+    document.getElementById("signInBtn").disabled = true;
+    document.getElementById("signOutBtn").disabled = true;
+    document.getElementById("spinner").style.display = "inline-block";
+
+    fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: action,
+            ambulanceNumber: ambulanceNumber,
+            drugBagID: drugBagID,
+            status: status,
+            lastSeen: lastSeen
+        }),
+        mode: 'no-cors'
+    })
+    .then(() => {
+        console.log("Request sent");
+        resetForm(); // No pop-up, just resets
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was an error with the request. Please try again.");
+    })
+    .finally(() => {
+        // Hide spinner after completion
+        document.getElementById("spinner").style.display = "none";
+        document.getElementById("signInBtn").disabled = false;
+        document.getElementById("signOutBtn").disabled = false;
+    });
+}
+
 
         function resetForm() {
             ambulanceNumber = "";
@@ -141,13 +152,21 @@
             <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
         </div>
 
-        <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
-            <h3 class="text-center">Book In or Out</h3>
-            <button class="btn btn-success w-100 mb-2" onclick="submitScan('in')">Sign Bag In</button>
-            <button class="btn btn-danger w-100" onclick="submitScan('out')">Sign Bag Out</button>
-             <br><br><button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+     <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+    <h3 class="text-center">Book In or Out</h3>
+    <button id="signInBtn" class="btn btn-success w-100 mb-2" onclick="submitScan('in')">Sign Bag In</button>
+    <button id="signOutBtn" class="btn btn-danger w-100" onclick="submitScan('out')">Sign Bag Out</button>
+
+    <!-- Spinner (Initially Hidden) -->
+    <div class="text-center mt-3">
+        <div id="spinner" class="spinner-border text-primary" style="display: none;" role="status">
+            <span class="visually-hidden">Processing...</span>
         </div>
     </div>
+
+    <br><button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
