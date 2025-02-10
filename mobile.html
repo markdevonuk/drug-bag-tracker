@@ -7,15 +7,17 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        #scanner {
-            width: 100% !important;
-            max-width: 350px; /* Adjust this to control the size */
-            height: 300px; 
-            overflow: hidden;
-        }
-    </style>
+<style>
+    #scanner {
+        width: 100% !important;
+        max-width: 350px; /* Adjust this to control the size */
+        height: 300px; 
+        overflow: hidden;
+    }
+</style>
 
+
+    
     <!-- QuaggaJS for Barcode Scanning -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   
@@ -45,8 +47,8 @@
                     type: "LiveStream",
                     target: document.querySelector("#scanner"),
                     constraints: { 
-                        facingMode: "environment" 
-                    },
+                        facingMode: "environment" },
+
                 },
                 decoder: {
                     readers: ["code_128_reader"]
@@ -54,6 +56,7 @@
                 locate: true,
                 numOfWorkers: navigator.hardwareConcurrency || 4,
                 frequency: 5,
+                locate: true,
                 debug: false,
                 multiple: false,
                 locator: {
@@ -69,88 +72,58 @@
                 Quagga.start();
             });
 
-            Quagga.onDetected(function (data) {
-                let scannedCode = data.codeResult.code;
-                let confidence = data.codeResult.decodedCodes[0].error ? data.codeResult.decodedCodes[0].error : 0;
+    Quagga.onDetected(function (data) {
+    let scannedCode = data.codeResult.code;
+    let confidence = data.codeResult.decodedCodes[0].error ? data.codeResult.decodedCodes[0].error : 0;
 
-                if (/^[FP]\d{4}$/.test(scannedCode) {
-                    drugBagID = scannedCode;
-                    document.getElementById("barcodeInput").value = drugBagID;
-                    Quagga.stop();
+    if (/^[FP]\d{4}$/.test(scannedCode) && confidence < 0.1) {
+        drugBagID = scannedCode;
+        document.getElementById("barcodeInput").value = drugBagID;
+        Quagga.stop();
 
-                    // Automatically navigate to the action screen
-                    showScreen("actionScreen");
-
-                    // Fetch drug data and update the "Manage Drugs" button color
-                    fetchDrugData();
-                }
-            });
+        // Show the "Continue" button
+        document.getElementById("continueBtn").style.display = "block";
+    }
+});
         }
 
-        function fetchDrugData() {
-            fetch(`https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec?bag=${drugBagID}`)
-                .then(response => response.json())
-                .then(data => {
-                    let hasExpiredDrugs = data.some(drug => checkExpired(drug.expiry));
-                    let manageDrugsBtn = document.getElementById("manageDrugsBtn");
+function submitScan(action) {
+    let status = action === "out" ? "Out" : "In";
+    let lastSeen = action === "out" ? ambulanceNumber : "Storage";
 
-                    if (hasExpiredDrugs) {
-                        manageDrugsBtn.classList.remove("btn-success");
-                        manageDrugsBtn.classList.add("btn-danger");
-                    } else {
-                        manageDrugsBtn.classList.remove("btn-danger");
-                        manageDrugsBtn.classList.add("btn-success");
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching drug data:", err);
-                });
-        }
+    // Disable buttons & show spinner
+    document.getElementById("signInBtn").disabled = true;
+    document.getElementById("signOutBtn").disabled = true;
+    document.getElementById("spinner").style.display = "inline-block";
 
-        function checkExpired(dateStr) {
-            if (!dateStr) return false;
-            let today = new Date();
-            today.setHours(0, 0, 0, 0); // Ignore time
-            let expiry = new Date(dateStr);
-            return expiry <= today; // If expiry is today or in the past, return true
-        }
+    fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: action,
+            ambulanceNumber: ambulanceNumber,
+            drugBagID: drugBagID,
+            status: status,
+            lastSeen: lastSeen
+        }),
+        mode: 'no-cors'
+    })
+    .then(() => {
+        console.log("Request sent");
+        resetForm(); // No pop-up, just resets
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("There was an error with the request. Please try again.");
+    })
+    .finally(() => {
+        // Hide spinner after completion
+        document.getElementById("spinner").style.display = "none";
+        document.getElementById("signInBtn").disabled = false;
+        document.getElementById("signOutBtn").disabled = false;
+    });
+}
 
-        function submitScan(action) {
-            let status = action === "out" ? "Out" : "In";
-            let lastSeen = action === "out" ? ambulanceNumber : "Storage";
-
-            // Disable buttons & show spinner
-            document.getElementById("signInBtn").disabled = true;
-            document.getElementById("signOutBtn").disabled = true;
-            document.getElementById("spinner").style.display = "inline-block";
-
-            fetch('https://script.google.com/macros/s/AKfycbw3XUUFoODJfdF6604ur7OQuVtlmJIT77JRk_dHxfleEbJRhe0JXyEGgzkrRfRH_ttF/exec', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: action,
-                    ambulanceNumber: ambulanceNumber,
-                    drugBagID: drugBagID,
-                    status: status,
-                    lastSeen: lastSeen
-                }),
-                mode: 'no-cors'
-            })
-            .then(() => {
-                console.log("Request sent");
-                resetForm(); // No pop-up, just resets
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("There was an error with the request. Please try again.");
-            })
-            .finally(() => {
-                // Hide spinner after completion
-                document.getElementById("spinner").style.display = "none";
-                document.getElementById("signInBtn").disabled = false;
-                document.getElementById("signOutBtn").disabled = false;
-            });
-        }
 
         function resetForm() {
             ambulanceNumber = "";
@@ -161,49 +134,53 @@
         }
 
         function openDrugManager() {
-            if (!drugBagID) {
-                alert("Please scan a drug bag first.");
-                return;
-            }
-            window.location.href = `drugs.html?bag=${drugBagID}`;
-        }
+    if (!drugBagID) {
+        alert("Please scan a drug bag first.");
+        return;
+    }
+    window.location.href = `drugs.html?bag=${drugBagID}`;
+}
+
     </script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h2 class="text-center mb-4">Drug Bag Tracker V1</h2>
+        <h2 class="text-center mb-4">Drug Bag Tracker V2</h2>
+      
 
         <div id="loginScreen" class="screen card p-4 shadow mx-auto" style="max-width: 400px;">
             <label for="ambulanceInput" class="form-label">Enter your ESR Number:</label>
             <input type="text" id="ambulanceInput" class="form-control mb-3" maxlength="8" placeholder="e.g. 288900012">
-            <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
-            <br><br>
-            <button class="btn btn-success w-100 mb-2" onclick="window.location.href='report.html'">Location report</button>
+             <button class="btn btn-primary w-100" onclick="setAmbulanceNumber()">Next</button>
+             <br><br>
+<button class="btn btn-success w-100 mb-2" onclick="window.location.href='report.html'">Location report</button>
         </div>
 
         <div id="scanScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
             <h3 class="text-center">Scan Drug Bag</h3>
             <div id="scanner" class="border border-secondary rounded mb-3" style="width: 100%; height: 300px;"></div>
             <input type="text" id="barcodeInput" class="form-control mb-3" placeholder="Scanned barcode will appear here" readonly>
-            <button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+            <button id="manageDrugsBtn" class="btn btn-info w-100 mb-2" onclick="openDrugManager()">Manage Drugs</button>
+             <button id="continueBtn" class="btn btn-success w-100 mt-2" style="display:none;" onclick="showScreen('actionScreen')">
+    Continue</button>
+        <br><br><button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
         </div>
 
-        <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
-            <h3 class="text-center">Book In or Out</h3>
-            <button id="signInBtn" class="btn btn-primary w-100 mb-2" onclick="submitScan('in')">Sign Bag In</button>
-            <button id="signOutBtn" class="btn btn-primary w-100 mb-2" onclick="submitScan('out')">Sign Bag Out</button>
-            <button id="manageDrugsBtn" class="btn btn-success w-100 mb-2" onclick="openDrugManager()">Manage Drugs</button>
+     <div id="actionScreen" class="screen card p-4 shadow mx-auto mt-4" style="max-width: 400px; display:none;">
+    <h3 class="text-center">Book In or Out</h3>
+    <button id="signInBtn" class="btn btn-success w-100 mb-2" onclick="submitScan('in')">Sign Bag In</button>
+    <button id="signOutBtn" class="btn btn-danger w-100" onclick="submitScan('out')">Sign Bag Out</button>
 
-            <!-- Spinner (Initially Hidden) -->
-            <div class="text-center mt-3">
-                <div id="spinner" class="spinner-border text-primary" style="display: none;" role="status">
-                    <span class="visually-hidden">Processing...</span>
-                </div>
-            </div>
-
-            <br><button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+    <!-- Spinner (Initially Hidden) -->
+    <div class="text-center mt-3">
+        <div id="spinner" class="spinner-border text-primary" style="display: none;" role="status">
+            <span class="visually-hidden">Processing...</span>
         </div>
     </div>
+
+    <br><button class="btn btn-secondary w-100" onclick="showScreen('loginScreen')">Reset</button>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
